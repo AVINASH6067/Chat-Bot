@@ -1,0 +1,162 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+}
+
+.app {
+  display: flex;
+  height: 100vh;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar {
+  width: 220px;
+  background: #020617;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar button {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  background: #1e293b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.sidebar button:hover {
+  background: #334155;
+}
+
+/* ================= CHAT LIST ================= */
+.chat-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 6px;
+}
+
+.chat-item:hover {
+  background: #1e293b;
+}
+
+.chat-item.active {
+  background: #334155;
+}
+
+.chat-title {
+  flex: 1;
+  font-size: 14px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* DELETE BUTTON */
+.delete-btn {
+  width: 22px;
+  height: 22px;
+  background: transparent;
+  border: none;
+  color: #aaa;
+  font-size: 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.delete-btn:hover {
+  color: red;
+}
+
+/* ================= CHAT AREA ================= */
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #0f172a;
+}
+
+.header {
+  padding: 12px;
+  border-bottom: 1px solid #1e293b;
+  font-weight: bold;
+}
+
+/* ================= MESSAGES ================= */
+.messages {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+}
+
+/* CHAT BUBBLES */
+.bubble {
+  max-width: 60%;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border-radius: 12px;
+  line-height: 1.5;
+}
+
+.user {
+  margin-left: auto;
+  background: #2563eb;
+  color: white;
+}
+
+.bot {
+  background: #1e293b;
+}
+
+/* ================= INPUT ================= */
+.input-box {
+  display: flex;
+  padding: 10px;
+  gap: 8px;
+  border-top: 1px solid #1e293b;
+  background: #020617;
+}
+
+.input-box input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+}
+
+.input-box button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.input-box button:first-of-type {
+  background: #2563eb;
+  color: white;
+}
+
+.input-box button:last-of-type {
+  background: #dc2626;
+  color: white;
+}
+
+/* ================= EMPTY STATE ================= */
+.empty {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
+}
+
