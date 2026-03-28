@@ -2,8 +2,13 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
 import "./index.css";
+import Login from "./Login";
 
 function App() {
+  const [token, setToken] = useState(
+    localStorage.getItem("token") || null
+  );
+
   const [message, setMessage] = useState("");
   const [chats, setChats] = useState([]);
   const [currentChatId, setCurrentChatId] = useState(null);
@@ -16,13 +21,52 @@ function App() {
   const currentChat =
     chats.find((c) => c.id === currentChatId) || null;
 
+  // 🔐 LOGIN CHECK
+  if (!token) {
+    return <Login setToken={setToken} />;
+  }
+
+  // 🔄 SCROLL
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
-   
   }, [chats]);
-  
 
-  // ✅ CREATE CHAT
+  // 📥 LOAD CHATS FROM DB
+  useEffect(() => {
+    const loadChats = async () => {
+      try {
+        const res = await axios.get(
+          "http://localhost:5000/chats",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const formatted = res.data.map((chat) => ({
+          id: chat.chatId,
+          title:
+            chat.messages[0]?.content.slice(0, 25) ||
+            "New Chat",
+          messages: chat.messages,
+          isTemporary: false,
+        }));
+
+        setChats(formatted);
+
+        if (formatted.length > 0) {
+          setCurrentChatId(formatted[0].id);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    loadChats();
+  }, [token]);
+
+  // ➕ CREATE CHAT
   const createChat = (isTemp = false) => {
     const newChat = {
       id: Date.now().toString(),
@@ -35,15 +79,18 @@ function App() {
     setCurrentChatId(newChat.id);
   };
 
-  // ✅ SEND MESSAGE
+  // 💬 SEND MESSAGE
   const sendMessage = async () => {
     if (!message || !currentChat || isTyping) return;
+
+    const chatId = currentChat.id;
+    const isTemporary = currentChat.isTemporary;
 
     const userMsg = { role: "user", content: message };
 
     setChats((prev) =>
       prev.map((chat) =>
-        chat.id === currentChatId
+        chat.id === chatId
           ? { ...chat, messages: [...chat.messages, userMsg] }
           : chat
       )
@@ -54,19 +101,23 @@ function App() {
     stopRef.current = false;
 
     try {
-      const res = await axios.post("http://localhost:5000/chat", {
-        message,
-        chatId: currentChatId,
-        isTemporary: currentChat.isTemporary, // 🔥 TEMP SUPPORT
-      });
+      const res = await axios.post(
+        "http://localhost:5000/chat",
+        { message, chatId, isTemporary },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       const text = res.data.bot;
       let i = 0;
 
-      // add empty bot message
+      // add bot placeholder
       setChats((prev) =>
         prev.map((chat) =>
-          chat.id === currentChatId
+          chat.id === chatId
             ? {
                 ...chat,
                 messages: [
@@ -89,13 +140,10 @@ function App() {
 
         setChats((prev) =>
           prev.map((chat) => {
-            if (chat.id !== currentChatId) return chat;
+            if (chat.id !== chatId) return chat;
 
             const msgs = [...chat.messages];
-            msgs[msgs.length - 1] = {
-              role: "assistant",
-              content: text.slice(0, i),
-            };
+            msgs[msgs.length - 1].content = text.slice(0, i);
 
             return { ...chat, messages: msgs };
           })
@@ -107,10 +155,10 @@ function App() {
         }
       }, 20);
 
-      // ✅ TITLE UPDATE FIX
+      // 🧠 TITLE UPDATE
       setChats((prev) =>
         prev.map((chat) => {
-          if (chat.id !== currentChatId) return chat;
+          if (chat.id !== chatId) return chat;
 
           if (
             chat.title === "New Chat" ||
@@ -139,6 +187,15 @@ function App() {
       <div className="sidebar">
         <button onClick={() => createChat(false)}>+ New Chat</button>
         <button onClick={() => createChat(true)}>⚡ Temporary Chat</button>
+
+        <button
+          onClick={() => {
+            localStorage.removeItem("token");
+            setToken(null);
+          }}
+        >
+          Logout
+        </button>
 
         {chats.map((chat) => (
           <div
@@ -176,7 +233,7 @@ function App() {
                 </div>
               ))}
 
-              {isTyping && <div className="typing">..</div>}
+              {isTyping && <div className="typing">...</div>}
               <div ref={endRef} />
             </div>
 
